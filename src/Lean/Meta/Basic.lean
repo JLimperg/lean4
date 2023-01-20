@@ -522,7 +522,7 @@ Throw an exception if `mvarId` is not declarated in the current metavariable con
 def _root_.Lean.MVarId.getDecl (mvarId : MVarId) : MetaM MetavarDecl := do
   match (← mvarId.findDecl?) with
   | some d => pure d
-  | none   => throwError "unknown metavariable '?{mvarId.name}'"
+  | none   => throwError "unknown metavariable '{mvarId.display}'"
 
 @[deprecated MVarId.getDecl]
 def getMVarDecl (mvarId : MVarId) : MetaM MetavarDecl := do
@@ -596,7 +596,7 @@ Return the level of the given universe level metavariable.
 def _root_.Lean.LMVarId.getLevel (mvarId : LMVarId) : MetaM Nat := do
   match (← getMCtx).findLevelDepth? mvarId with
   | some depth => return depth
-  | _          => throwError "unknown universe metavariable '?{mvarId.name}'"
+  | _          => throwError "unknown universe metavariable '{mvarId.display}'"
 
 @[deprecated LMVarId.getLevel]
 def getLevelMVarDepth (mvarId : LMVarId) : MetaM Nat :=
@@ -1508,7 +1508,7 @@ def sortFVarIds (fvarIds : Array FVarId) : MetaM (Array FVarId) := do
     | some d₁, some d₂ => d₁.index < d₂.index
     | some _,  none    => false
     | none,    some _  => true
-    | none,    none    => Name.quickLt fvarId₁.name fvarId₂.name
+    | none,    none    => fvarId₁.id < fvarId₂.id
 
 end Methods
 

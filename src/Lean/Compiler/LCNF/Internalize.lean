@@ -121,7 +121,7 @@ def cleanup (decl : Array Decl) : CompilerM (Array Decl) := do
 
 def normalizeFVarIds (decl : Decl) : CoreM Decl := do
   let ngenSaved ← getNGen
-  setNGen {}
+  setNGen <| mkUniqueIdGenerator .default
   try
     CompilerM.run <| decl.internalize
   finally

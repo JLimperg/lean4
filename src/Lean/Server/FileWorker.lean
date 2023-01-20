@@ -224,7 +224,7 @@ section Initialization
         trees := #[Elab.InfoTree.context ({
           env     := headerEnv
           fileMap := m.text
-          ngen    := { namePrefix := `_worker }
+          ngen    := mkUniqueIdGenerator .worker
         }) (Elab.InfoTree.node
             (Elab.Info.ofCommandInfo { elaborator := `header, stx := headerStx })
             (headerStx[1].getArgs.toList.map (fun importStx =>

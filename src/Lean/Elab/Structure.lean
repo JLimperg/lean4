@@ -285,7 +285,8 @@ private partial def getNestedProjectionArg (e : Expr) : MetaM Expr := do
 
 -/
 private def getFieldType (infos : Array StructFieldInfo) (parentType : Expr) (fieldName : Name) : MetaM Expr := do
-  withLocalDeclD (← mkFreshId) parentType fun parent => do
+  let freshName := (← mkUniqueId).toNameWithPrefix "_uniq"
+  withLocalDeclD freshName parentType fun parent => do
     let proj ← mkProjection parent fieldName
     let projType ← inferType proj
     /- Eliminate occurrences of `parent.field`. This happens when the structure contains dependent fields.

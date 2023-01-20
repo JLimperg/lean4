@@ -867,11 +867,11 @@ instance : ToString Exception where
  `MkBinding` and `elimMVarDepsAux` are mutually recursive, but `cache` is only used at `elimMVarDepsAux`.
   We use a single state object for convenience.
 
-  We have a `NameGenerator` because we need to generate fresh auxiliary metavariables. -/
+  We have a `IdGenerator` because we need to generate fresh auxiliary metavariables. -/
 structure State where
   mctx           : MetavarContext
   nextMacroScope : MacroScope
-  ngen           : NameGenerator
+  ngen           : UniqueIdGenerator
   cache          : HashMap ExprStructEq Expr := {}
 
 structure Context where
@@ -1098,7 +1098,7 @@ mutual
       let newLocalInsts := mvarDecl.localInstances.filter fun inst => toRevert.all fun x => inst.fvar != x
       -- Remark: we must reset the cache before processing `mkAuxMVarType` because `toRevert` may not be equal to `xs`
       let newMVarType ← withFreshCache do mkAuxMVarType mvarLCtx toRevert newMVarKind mvarDecl.type
-      let newMVarId    := { name := (← get).ngen.curr }
+      let newMVarId    := { id := (← get).ngen.curr }
       let newMVar      := mkMVar newMVarId
       let result       := mkMVarApp mvarLCtx newMVar toRevert newMVarKind
       let numScopeArgs := mvarDecl.numScopeArgs + result.getAppNumArgs

@@ -117,8 +117,8 @@ where
     match a with
     -- Atomic
     | .bvar i ..    => return i < b.bvarIdx!
-    | .fvar id ..   => return Name.lt id.name b.fvarId!.name
-    | .mvar id ..   => return Name.lt id.name b.mvarId!.name
+    | .fvar id ..   => return id.id < b.fvarId!.id
+    | .mvar id ..   => return id.id < b.mvarId!.id
     | .sort u ..    => return Level.normLt u b.sortLevel!
     | .const n ..   => return Name.lt n b.constName! -- We igore the levels
     | .lit v ..     => return Literal.lt v b.litValue!

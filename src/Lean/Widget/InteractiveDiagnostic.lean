@@ -110,7 +110,7 @@ where
     currNamespace := nCtx.currNamespace
     openDecls     := nCtx.openDecls
     -- Hack: to make sure unique ids created at `ppExprWithInfos` do not collide with ones in `ctx.mctx`
-    ngen          := { namePrefix := `_diag }
+    ngen          := mkUniqueIdGenerator .widgetDiag
   }
 
   go (nCtx : NamingContext) : Option MessageDataContext → MessageData → MsgFmtM Format

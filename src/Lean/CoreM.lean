@@ -36,8 +36,8 @@ structure State where
   env             : Environment
   /-- Next macro scope. We use macro scopes to avoid accidental name capture. -/
   nextMacroScope  : MacroScope     := firstFrontendMacroScope + 1
-  /-- Name generator for producing unique `FVarId`s, `MVarId`s, and `LMVarId`s -/
-  ngen            : NameGenerator  := {}
+  /-- Id generator for producing unique `FVarId`s, `MVarId`s, and `LMVarId`s -/
+  ngen            : UniqueIdGenerator  := mkUniqueIdGenerator .default
   /-- Trace messages -/
   traceState      : TraceState     := {}
   /-- Cache for instantiating universe polymorphic declarations. -/
@@ -100,7 +100,7 @@ instance : MonadWithOptions CoreM where
 instance : AddMessageContext CoreM where
   addMessageContext := addMessageContextPartial
 
-instance : MonadNameGenerator CoreM where
+instance : MonadUniqueIdGenerator CoreM where
   getNGen := return (← get).ngen
   setNGen ngen := modify fun s => { s with ngen := ngen }
 

@@ -176,7 +176,7 @@ def checkLetDecl (letDecl : LetDecl) : CheckM Unit := do
 
 def addFVarId (fvarId : FVarId) : CheckM Unit := do
   if (← get).all.contains fvarId then
-    throwError "invalid LCNF, free variables are not unique `{fvarId.name}`"
+    throwError "invalid LCNF, free variables are not unique `{fvarId.id}`"
   modify fun s => { s with all := s.all.insert fvarId }
 
 @[inline] def withFVarId (fvarId : FVarId) (x : CheckM α) : CheckM α := do

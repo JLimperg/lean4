@@ -28,14 +28,14 @@ def substCore (mvarId : MVarId) (hFVarId : FVarId) (symm := false) (fvarSubst : 
       match a with
       | Expr.fvar aFVarId => do
         let aFVarIdOriginal := aFVarId
-        trace[Meta.Tactic.subst] "substituting {a} (id: {aFVarId.name}) with {b}"
+        trace[Meta.Tactic.subst] "substituting {a} (id: {aFVarId.id}) with {b}"
         if (← exprDependsOn b aFVarId) then
           throwTacticEx `subst mvarId m!"'{a}' occurs at{indentExpr b}"
         let (vars, mvarId) ← mvarId.revert #[aFVarId, hFVarId] true
         trace[Meta.Tactic.subst] "after revert {MessageData.ofGoal mvarId}"
         let (twoVars, mvarId) ← mvarId.introNP 2
         trace[Meta.Tactic.subst] "after intro2 {MessageData.ofGoal mvarId}"
-        trace[Meta.Tactic.subst] "reverted variables {vars.map (·.name)}"
+        trace[Meta.Tactic.subst] "reverted variables {vars.map (·.id)}"
         let aFVarId := twoVars[0]!
         let a       := mkFVar aFVarId
         let hFVarId := twoVars[1]!

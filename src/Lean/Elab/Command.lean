@@ -29,7 +29,7 @@ structure State where
   nextMacroScope : Nat := firstFrontendMacroScope + 1
   maxRecDepth    : Nat
   nextInstIdx    : Nat := 1 -- for generating anonymous instance names
-  ngen           : NameGenerator := {}
+  ngen           : UniqueIdGenerator := mkUniqueIdGenerator .default
   infoState      : InfoState := {}
   traceState     : TraceState := {}
   deriving Nonempty

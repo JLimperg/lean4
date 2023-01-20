@@ -10,6 +10,7 @@ import Lean.Data.PersistentHashSet
 import Lean.Hygiene
 import Lean.Data.Name
 import Lean.Data.Format
+import Lean.UniqueId
 
 def Nat.imax (n m : Nat) : Nat :=
   if m = 0 then 0 else Nat.max n m
@@ -61,23 +62,28 @@ instance : Repr Level.Data where
 
 open Level
 
-/-- Universe level metavariable Id   -/
+/-- Universe level metavariable id. -/
 structure LevelMVarId where
-  name : Name
-  deriving Inhabited, BEq, Hashable, Repr
+  id : UniqueId
+  deriving Inhabited, BEq, Hashable
 
 /-- Short for `LevelMVarId` -/
 abbrev LMVarId := LevelMVarId
 
-instance : Repr LMVarId where
-  reprPrec n p := reprPrec n.name p
+-- FIXME maybe make this toString?
+def LevelMVarId.display (id : LevelMVarId) : String :=
+  s!"?_uniq.{id.id}"
 
-def LMVarIdSet := RBTree LMVarId (Name.quickCmp ·.name ·.name)
+-- FIXME ?
+instance : Repr LMVarId where
+  reprPrec n p := reprPrec n.id p
+
+def LMVarIdSet := RBTree LMVarId (compare ·.id ·.id)
   deriving Inhabited, EmptyCollection
 
 instance : ForIn m LMVarIdSet LMVarId := inferInstanceAs (ForIn _ (RBTree ..) ..)
 
-def LMVarIdMap (α : Type) := RBMap LMVarId α (Name.quickCmp ·.name ·.name)
+def LMVarIdMap (α : Type) := RBMap LMVarId α (compare ·.id ·.id)
 
 instance : EmptyCollection (LMVarIdMap α) := inferInstanceAs (EmptyCollection (RBMap ..))
 
@@ -271,8 +277,9 @@ partial def normLtAux : Level → Nat → Level → Nat → Bool
     are not affected by shifted indices. We used to use `Name.quickLt` which is not stable over shifted indices (the hashcodes change),
     and changes to the elaborator could affect the universe parameters and break code that relies on an explicit order.
     Example: test `tests/lean/343.lean`.
+    FIXME ?
    -/
-  | mvar n₁, k₁, mvar n₂, k₂ => if n₁ == n₂ then k₁ < k₂ else Name.lt n₁.name n₂.name
+  | mvar id₁, k₁, mvar id₂, k₂ => if id₁ == id₂ then k₁ < k₂ else id₁.id < id₂.id
   | l₁, k₁, l₂, k₂ => if l₁ == l₂ then k₁ < k₂ else ctorToNat l₁ < ctorToNat l₂
 
 /--
@@ -429,9 +436,7 @@ def toResult : Level → Result
   | max l₁ l₂  => Result.max (toResult l₁) (toResult l₂)
   | imax l₁ l₂ => Result.imax (toResult l₁) (toResult l₂)
   | param n    => Result.leaf n
-  | mvar n     =>
-    let n := n.name.replacePrefix `_uniq (Name.mkSimple "?u");
-    Result.leaf n
+  | mvar id    => Result.leaf <| id.id.toNameWithPrefix "?u"
 
 private def parenIfFalse : Format → Bool → Format
   | f, true  => f

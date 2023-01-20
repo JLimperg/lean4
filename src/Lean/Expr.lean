@@ -5,6 +5,7 @@ Authors: Leonardo de Moura
 -/
 import Lean.Data.KVMap
 import Lean.Level
+import Lean.UniqueId
 
 namespace Lean
 
@@ -210,24 +211,24 @@ instance : Repr Expr.Data where
 open Expr
 
 /--
-The unique free variable identifier. It is just a hierarchical name,
-but we wrap it in `FVarId` to make sure they don't get mixed up with `MVarId`.
-
-This is not the user-facing name for a free variable. This information is stored
-in the local context (`LocalContext`). The unique identifiers are generated using
-a `NameGenerator`.
+FIXME doc
 -/
 structure FVarId where
-  name : Name
+  id : UniqueId
   deriving Inhabited, BEq, Hashable
 
+-- FIXME maybe make this toString?
+def FVarId.display (id : FVarId) : String :=
+  s!"_uniq.{id.id}"
+
+-- FIXME ?
 instance : Repr FVarId where
-  reprPrec n p := reprPrec n.name p
+  reprPrec n p := reprPrec n.id p
 
 /--
 A set of unique free variable identifiers.
 This is a persistent data structure implemented using red-black trees. -/
-def FVarIdSet := RBTree FVarId (Name.quickCmp ·.name ·.name)
+def FVarIdSet := RBTree FVarId (compare ·.id ·.id)
   deriving Inhabited, EmptyCollection
 
 instance : ForIn m FVarIdSet FVarId := inferInstanceAs (ForIn _ (RBTree ..) ..)
@@ -245,7 +246,7 @@ def FVarIdHashSet := HashSet FVarId
 /--
 A mapping from free variable identifiers to values of type `α`.
 This is a persistent data structure implemented using red-black trees. -/
-def FVarIdMap (α : Type) := RBMap FVarId α (Name.quickCmp ·.name ·.name)
+def FVarIdMap (α : Type) := RBMap FVarId α (compare ·.id ·.id)
 
 def FVarIdMap.insert (s : FVarIdMap α) (fvarId : FVarId) (a : α) : FVarIdMap α :=
   RBMap.insert s fvarId a
@@ -255,15 +256,20 @@ instance : EmptyCollection (FVarIdMap α) := inferInstanceAs (EmptyCollection (R
 instance : Inhabited (FVarIdMap α) where
   default := {}
 
-/-- Universe metavariable Id   -/
+/-- FIXME doc   -/
 structure MVarId where
-  name : Name
-  deriving Inhabited, BEq, Hashable, Repr
+  id : UniqueId
+  deriving Inhabited, BEq, Hashable
 
+-- FIXME maybe make this toString?
+def MVarId.display (id : MVarId) : String :=
+  s!"?_uniq.{id.id}"
+
+-- FIXME ?
 instance : Repr MVarId where
-  reprPrec n p := reprPrec n.name p
+  reprPrec n p := reprPrec n.id p
 
-def MVarIdSet := RBTree MVarId (Name.quickCmp ·.name ·.name)
+def MVarIdSet := RBTree MVarId (compare ·.id ·.id)
   deriving Inhabited, EmptyCollection
 
 def MVarIdSet.insert (s : MVarIdSet) (mvarId : MVarId) : MVarIdSet :=
@@ -271,7 +277,7 @@ def MVarIdSet.insert (s : MVarIdSet) (mvarId : MVarId) : MVarIdSet :=
 
 instance : ForIn m MVarIdSet MVarId := inferInstanceAs (ForIn _ (RBTree ..) ..)
 
-def MVarIdMap (α : Type) := RBMap MVarId α (Name.quickCmp ·.name ·.name)
+def MVarIdMap (α : Type) := RBMap MVarId α (compare ·.id ·.id)
 
 def MVarIdMap.insert (s : MVarIdMap α) (mvarId : MVarId) (a : α) : MVarIdMap α :=
   RBMap.insert s mvarId a
@@ -1750,22 +1756,22 @@ def isLHSGoal? (e : Expr) : Option Expr :=
 Polymorphic operation for generating unique/fresh free variable identifiers.
 It is available in any monad `m` that implements the inferface `MonadNameGenerator`.
 -/
-def mkFreshFVarId [Monad m] [MonadNameGenerator m] : m FVarId :=
-  return { name := (← mkFreshId) }
+def mkFreshFVarId [Monad m] [MonadUniqueIdGenerator m] : m FVarId :=
+  return { id := ← mkUniqueId }
 
 /--
 Polymorphic operation for generating unique/fresh metavariable identifiers.
 It is available in any monad `m` that implements the inferface `MonadNameGenerator`.
 -/
-def mkFreshMVarId [Monad m] [MonadNameGenerator m] : m MVarId :=
-  return { name := (← mkFreshId) }
+def mkFreshMVarId [Monad m] [MonadUniqueIdGenerator m] : m MVarId :=
+  return { id := ← mkUniqueId }
 
 /--
 Polymorphic operation for generating unique/fresh universe metavariable identifiers.
 It is available in any monad `m` that implements the inferface `MonadNameGenerator`.
 -/
-def mkFreshLMVarId [Monad m] [MonadNameGenerator m] : m LMVarId :=
-  return { name := (← mkFreshId) }
+def mkFreshLMVarId [Monad m] [MonadUniqueIdGenerator m] : m LMVarId :=
+  return { id := ← mkUniqueId }
 
 /-- Return `Not p` -/
 def mkNot (p : Expr) : Expr := mkApp (mkConst ``Not) p

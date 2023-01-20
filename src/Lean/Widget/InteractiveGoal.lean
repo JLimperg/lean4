@@ -134,7 +134,7 @@ variable [MonadControlT MetaM n] [Monad n] [MonadError n] [MonadOptions n] [Mona
 def withGoalCtx (goal : MVarId) (action : LocalContext → MetavarDecl → n α) : n α := do
   let mctx ← getMCtx
   let some mvarDecl := mctx.findDecl? goal
-    | throwError "unknown goal {goal.name}"
+    | throwError "unknown goal {goal.id}"
   let lctx := mvarDecl.lctx |>.sanitizeNames.run' {options := (← getOptions)}
   withLCtx lctx mvarDecl.localInstances (action lctx mvarDecl)
 

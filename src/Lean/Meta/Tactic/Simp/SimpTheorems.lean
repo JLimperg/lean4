@@ -43,7 +43,7 @@ inductive Origin where
 /-- A unique identifier corresponding to the origin. -/
 def Origin.key : Origin → Name
   | .decl declName => declName
-  | .fvar fvarId => fvarId.name
+  | .fvar fvarId => fvarId.id.toNameWithPrefix "_uniq" -- FIXME ?
   | .stx id _ => id
   | .other name => name
 
@@ -297,7 +297,7 @@ private def checkTypeIsProp (type : Expr) : MetaM Unit :=
     throwError "invalid 'simp', proposition expected{indentExpr type}"
 
 private def mkSimpTheoremCore (origin : Origin) (e : Expr) (levelParams : Array Name) (proof : Expr) (post : Bool) (prio : Nat) : MetaM SimpTheorem := do
-  assert! origin != .fvar ⟨.anonymous⟩
+  assert! origin != .fvar ⟨⟨0⟩⟩ -- FIXME ???
   let type ← instantiateMVars (← inferType e)
   withNewMCtxDepth do
     let (_, _, type) ← withReducible <| forallMetaTelescopeReducing type

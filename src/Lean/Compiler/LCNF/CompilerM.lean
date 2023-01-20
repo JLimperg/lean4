@@ -70,7 +70,7 @@ def getType (fvarId : FVarId) : CompilerM Expr := do
   else if let some decl := lctx.funDecls.find? fvarId then
     return decl.type
   else
-    throwError "unknown free variable {fvarId.name}"
+    throwError "unknown free variable {fvarId.display}"
 
 def getBinderName (fvarId : FVarId) : CompilerM Name := do
   let lctx := (← get).lctx
@@ -81,7 +81,7 @@ def getBinderName (fvarId : FVarId) : CompilerM Name := do
   else if let some decl := lctx.funDecls.find? fvarId then
     return decl.binderName
   else
-    throwError "unknown free variable {fvarId.name}"
+    throwError "unknown free variable {fvarId.display}"
 
 def findParam? (fvarId : FVarId) : CompilerM (Option Param) :=
   return (← get).lctx.params.find? fvarId
@@ -105,15 +105,15 @@ def Arg.isConstructorApp (arg : Arg) : CompilerM Bool := do
   LCNF.isConstructorApp fvarId
 
 def getParam (fvarId : FVarId) : CompilerM Param := do
-  let some param ← findParam? fvarId | throwError "unknown parameter {fvarId.name}"
+  let some param ← findParam? fvarId | throwError "unknown parameter {fvarId.display}"
   return param
 
 def getLetDecl (fvarId : FVarId) : CompilerM LetDecl := do
-  let some decl ← findLetDecl? fvarId | throwError "unknown let-declaration {fvarId.name}"
+  let some decl ← findLetDecl? fvarId | throwError "unknown let-declaration {fvarId.display}"
   return decl
 
 def getFunDecl (fvarId : FVarId) : CompilerM FunDecl := do
-  let some decl ← findFunDecl? fvarId | throwError "unknown local function {fvarId.name}"
+  let some decl ← findFunDecl? fvarId | throwError "unknown local function {fvarId.display}"
   return decl
 
 @[inline] def modifyLCtx (f : LCtx → LCtx) : CompilerM Unit := do

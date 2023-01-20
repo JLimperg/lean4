@@ -180,8 +180,10 @@ def bindingDomain! : SubExpr → SubExpr
   | ⟨.lam _ t _ _, p⟩ => ⟨t, p.pushBindingDomain⟩
   | _ => panic! "subexpr is not a binder"
 
-instance : ToJson FVarId := ⟨fun f => toJson f.name⟩
-instance : ToJson MVarId := ⟨fun f => toJson f.name⟩
+instance : ToJson UniqueId := ⟨fun i => toJson i.id⟩
+instance : ToJson FVarId := ⟨fun f => toJson f.id⟩
+instance : ToJson MVarId := ⟨fun f => toJson f.id⟩
+instance : FromJson UniqueId := ⟨fun j => UniqueId.mk <$> fromJson? j⟩
 instance : FromJson FVarId := ⟨fun j => FVarId.mk <$> fromJson? j⟩
 instance : FromJson MVarId := ⟨fun j => MVarId.mk <$> fromJson? j⟩
 

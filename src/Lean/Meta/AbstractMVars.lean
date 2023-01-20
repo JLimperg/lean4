@@ -16,7 +16,7 @@ structure AbstractMVarsResult where
 namespace AbstractMVars
 
 structure State where
-  ngen         : NameGenerator
+  ngen         : UniqueIdGenerator
   lctx         : LocalContext
   mctx         : MetavarContext
   nextParamIdx : Nat := 0
@@ -32,14 +32,9 @@ instance : MonadMCtx M where
   getMCtx := return (← get).mctx
   modifyMCtx f := modify fun s => { s with mctx := f s.mctx }
 
-def mkFreshId : M Name := do
-  let s ← get
-  let fresh := s.ngen.curr
-  modify fun s => { s with ngen := s.ngen.next }
-  pure fresh
-
-def mkFreshFVarId : M FVarId :=
-  return { name := (← mkFreshId) }
+instance : MonadUniqueIdGenerator M where
+  getNGen := return (← get).ngen
+  setNGen ngen := modify λ s => { s with ngen }
 
 private partial def abstractLevelMVars (u : Level) : M Level := do
   if !u.hasMVar then

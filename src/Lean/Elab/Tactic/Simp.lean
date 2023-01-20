@@ -169,12 +169,12 @@ def elabSimpArgs (stx : Syntax) (ctx : Simp.Context) (eraseLocal : Bool) (kind :
 
           match (← resolveSimpIdTheorem? term) with
           | .expr e  =>
-            let name ← mkFreshId
+            let name ← mkFreshName
             thms ← addDeclToUnfoldOrTheorem thms (.stx name arg) e post inv kind
           | .ext ext =>
             thmsArray := thmsArray.push (← ext.getTheorems)
           | .none    =>
-            let name ← mkFreshId
+            let name ← mkFreshName
             thms ← addSimpTheorem thms (.stx name arg) term post inv
         else if arg.getKind == ``Lean.Parser.Tactic.simpStar then
           starArg := true
@@ -182,6 +182,9 @@ def elabSimpArgs (stx : Syntax) (ctx : Simp.Context) (eraseLocal : Bool) (kind :
           throwUnsupportedSyntax
       return { ctx := { ctx with simpTheorems := thmsArray.set! 0 thms }, starArg }
 where
+  mkFreshName : TacticM Name :=
+    return (← mkUniqueId).toNameWithPrefix "_simp"
+
   resolveSimpIdTheorem? (simpArgTerm : Term) : TacticM ResolveSimpIdResult := do
     let resolveExt (n : Name) : TacticM ResolveSimpIdResult := do
       if let some ext ← getSimpExtension? n then

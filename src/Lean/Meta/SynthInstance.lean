@@ -82,7 +82,7 @@ def Waiter.isRoot : Waiter → Bool
 namespace  MkTableKey
 
 structure State where
-  nextIdx : Nat := 0
+  nextIdx : UniqueId
   lmap    : HashMap LMVarId Level := {}
   emap    : HashMap MVarId Expr := {}
   mctx    : MetavarContext
@@ -109,8 +109,8 @@ partial def normLevel (u : Level) : M Level := do
         match (← get).lmap.find? mvarId with
         | some u' => pure u'
         | none    =>
-          let u' := mkLevelParam <| Name.mkNum `_tc s.nextIdx
-          modify fun s => { s with nextIdx := s.nextIdx + 1, lmap := s.lmap.insert mvarId u' }
+          let u' := mkLevelParam <| s.nextIdx.toNameWithPrefix "_tc"
+          modify fun s => { s with nextIdx := s.nextIdx.succ, lmap := s.lmap.insert mvarId u' }
           return u'
     | u => return u
 
@@ -134,8 +134,8 @@ partial def normExpr (e : Expr) : M Expr := do
         match s.emap.find? mvarId with
         | some e' => pure e'
         | none    => do
-          let e' := mkFVar { name := Name.mkNum `_tc s.nextIdx }
-          modify fun s => { s with nextIdx := s.nextIdx + 1, emap := s.emap.insert mvarId e' }
+          let e' := mkFVar { id := s.nextIdx }
+          modify fun s => { s with nextIdx := s.nextIdx.succ, emap := s.emap.insert mvarId e' }
           return e'
     | _ => return e
 
@@ -143,7 +143,8 @@ end MkTableKey
 
 /-- Remark: `mkTableKey` assumes `e` does not contain assigned metavariables. -/
 def mkTableKey [Monad m] [MonadMCtx m] (e : Expr) : m Expr := do
-  let (r, s) := MkTableKey.normExpr e |>.run { mctx := (← getMCtx) }
+  let nextIdx := UniqueIdClass.synthInstance.firstUniqueId
+  let (r, s) := MkTableKey.normExpr e |>.run { mctx := (← getMCtx), nextIdx }
   setMCtx s.mctx
   return r
 

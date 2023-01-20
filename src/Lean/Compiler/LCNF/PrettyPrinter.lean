@@ -34,7 +34,7 @@ def ppFVar (fvarId : FVarId) : M Format :=
   try
     return format (← getBinderName fvarId)
   catch _ =>
-    return format fvarId.name
+    return format <| fvarId.id.toNameWithPrefix "_uniq"
 
 def ppExpr (e : Expr) : M Format := do
   Meta.ppExpr e |>.run' { lctx := (← read) }

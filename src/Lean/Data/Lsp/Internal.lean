@@ -26,20 +26,24 @@ namespace RefIdent
 
 def toString : RefIdent → String
   | RefIdent.const n => s!"c:{n}"
-  | RefIdent.fvar id => s!"f:{id.name}"
+  | RefIdent.fvar id => s!"f:{id.id}"
 
 def fromString (s : String) : Except String RefIdent := do
   let sPrefix := s.take 2
   let sName := s.drop 2
   -- See `FromJson Name`
-  let name ← match sName with
-    | "[anonymous]" => pure Name.anonymous
-    | _ => match Syntax.decodeNameLit ("`" ++ sName) with
-      | some n => pure n
-      | none => throw s!"expected a Name, got {sName}"
   match sPrefix with
-    | "c:" => return RefIdent.const name
-    | "f:" => return RefIdent.fvar <| FVarId.mk name
+    | "c:" =>
+      let name ← match sName with
+        | "[anonymous]" => pure Name.anonymous
+        | _ => match Syntax.decodeNameLit ("`" ++ sName) with
+          | some n => pure n
+          | none => throw s!"expected a Name, got {sName}"
+      return RefIdent.const name
+    | "f:" =>
+      let some id := String.toNat? sName
+        | throw s!"expected a natural number, got {sName}"
+      return RefIdent.fvar { id := .ofNat id }
     | _ => throw "string must start with 'c:' or 'f:'"
 
 end RefIdent

@@ -22,7 +22,7 @@ structure ContextInfo where
   options       : Options        := {}
   currNamespace : Name           := Name.anonymous
   openDecls     : List OpenDecl  := []
-  ngen          : NameGenerator -- We must save the name generator to implement `ContextInfo.runMetaM` and making we not create `MVarId`s used in `mctx`.
+  ngen          : UniqueIdGenerator -- We must save the id generator to implement `ContextInfo.runMetaM` and making we not create `MVarId`s used in `mctx`.
 
 /-- Base structure for `TermInfo`, `CommandInfo` and `TacticInfo`. -/
 structure ElabInfo where
@@ -166,7 +166,7 @@ inductive Info where
     for a particular piece of syntax may not be ready yet. Hence InfoTree supports metavariable-like
     `hole`s which are filled in later in the same way that unassigned metavariables are.
 -/
-inductive InfoTree where
+inductive InfoTree : Type where
   /-- The context object is created by `liftTermElabM` at `Command.lean` -/
   | context (i : ContextInfo) (t : InfoTree)
   /-- The children contain information for nested term elaboration and tactic evaluation -/

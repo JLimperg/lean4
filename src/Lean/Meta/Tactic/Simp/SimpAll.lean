@@ -88,7 +88,7 @@ private partial def loop : M Bool := do
         -/
         trace[Meta.Tactic.simp.all] "entry.id: {← ppOrigin entry.id}, {entry.type} => {typeNew}"
         let mut simpThmsNew := (← getSimpTheorems).eraseTheorem (.fvar entry.fvarId)
-        let idNew ← mkFreshId
+        let idNew := (← mkUniqueId).toNameWithPrefix "_simpAll"
         simpThmsNew ← simpThmsNew.addTheorem (.other idNew) (← mkExpectedTypeHint proofNew typeNew)
         modify fun s => { s with
           modified         := true

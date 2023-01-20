@@ -90,7 +90,7 @@ private partial def checkOutParam (i : Nat) (outParamFVarIds : Array FVarId) (ou
   match type with
   | .forallE _ d b bi =>
     let addOutParam (_ : Unit) :=
-      let fvarId := { name := Name.mkNum `_fvar outParamFVarIds.size }
+      let fvarId := { id := ⟨outParamFVarIds.size.toUInt64⟩ }
       let fvar      := mkFVar fvarId
       let b         := b.instantiate1 fvar
       checkOutParam (i+1) (outParamFVarIds.push fvarId) (outParams.push i) b
@@ -122,7 +122,7 @@ where
     match typeAux with
     | .forallE _ d b bi =>
       let mkOutParamImplicit (dNew : Expr) :=
-        let fvarId := { name := Name.mkNum `_fvar outParamFVarIds.size }
+        let fvarId := { id := ⟨outParamFVarIds.size.toUInt64⟩ }
         let fvar      := mkFVar fvarId
         let b         := b.instantiate1 fvar
         let bNew      := go type.bindingBody! b (outParamFVarIds.push fvarId)

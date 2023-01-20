@@ -16,7 +16,7 @@ structure Context where
   autoBoundImplicit : Bool
 
 structure State where
-  ngen       : NameGenerator
+  ngen       : UniqueIdGenerator
   mctx       : MetavarContext
   levelNames : List Name
 
@@ -34,7 +34,7 @@ instance : AddMessageContext LevelElabM where
   addMessageContext msg := pure msg
 
 @[always_inline]
-instance : MonadNameGenerator LevelElabM where
+instance : MonadUniqueIdGenerator LevelElabM where
   getNGen := return (← get).ngen
   setNGen ngen := modify fun s => { s with ngen := ngen }
 

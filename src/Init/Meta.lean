@@ -217,42 +217,6 @@ instance : DecidableEq Name :=
 
 end Name
 
-structure NameGenerator where
-  namePrefix : Name := `_uniq
-  idx        : Nat  := 1
-  deriving Inhabited
-
-namespace NameGenerator
-
-@[inline] def curr (g : NameGenerator) : Name :=
-  Name.mkNum g.namePrefix g.idx
-
-@[inline] def next (g : NameGenerator) : NameGenerator :=
-  { g with idx := g.idx + 1 }
-
-@[inline] def mkChild (g : NameGenerator) : NameGenerator × NameGenerator :=
-  ({ namePrefix := Name.mkNum g.namePrefix g.idx, idx := 1 },
-   { g with idx := g.idx + 1 })
-
-end NameGenerator
-
-class MonadNameGenerator (m : Type → Type) where
-  getNGen : m NameGenerator
-  setNGen : NameGenerator → m Unit
-
-export MonadNameGenerator (getNGen setNGen)
-
-def mkFreshId {m : Type → Type} [Monad m] [MonadNameGenerator m] : m Name := do
-  let ngen ← getNGen
-  let r := ngen.curr
-  setNGen ngen.next
-  pure r
-
-instance monadNameGeneratorLift (m n : Type → Type) [MonadLift m n] [MonadNameGenerator m] : MonadNameGenerator n := {
-  getNGen := liftM (getNGen : m _),
-  setNGen := fun ngen => liftM (setNGen ngen : m _)
-}
-
 namespace Syntax
 
 deriving instance Repr for Syntax.Preresolved

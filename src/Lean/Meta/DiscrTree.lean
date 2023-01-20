@@ -58,7 +58,7 @@ def Key.ctorIdx : Key s → Nat
 
 def Key.lt : Key s → Key s → Bool
   | .lit v₁,        .lit v₂        => v₁ < v₂
-  | .fvar n₁ a₁,    .fvar n₂ a₂    => Name.quickLt n₁.name n₂.name || (n₁ == n₂ && a₁ < a₂)
+  | .fvar n₁ a₁,    .fvar n₂ a₂    => n₁.id < n₂.id || (n₁ == n₂ && a₁ < a₂)
   | .const n₁ a₁,   .const n₂ a₂   => Name.quickLt n₁ n₂ || (n₁ == n₂ && a₁ < a₂)
   | .proj s₁ i₁ a₁, .proj s₂ i₂ a₂ => Name.quickLt s₁ s₂ || (s₁ == s₂ && i₁ < i₂) || (s₁ == s₂ && i₁ == i₂ && a₁ < a₂)
   | k₁,             k₂             => k₁.ctorIdx < k₂.ctorIdx
@@ -73,7 +73,7 @@ def Key.format : Key s → Format
   | .lit (Literal.strVal v) => repr v
   | .const k _              => Std.format k
   | .proj s i _             => Std.format s ++ "." ++ Std.format i
-  | .fvar k _               => Std.format k.name
+  | .fvar k _               => Std.format k.id -- FIXME ?
   | .arrow                  => "→"
 
 instance : ToFormat (Key s) := ⟨Key.format⟩
@@ -107,7 +107,7 @@ instance [ToFormat α] : ToFormat (DiscrTree α s) := ⟨format⟩
 
 /-- The discrimination tree ignores implicit arguments and proofs.
    We use the following auxiliary id as a "mark". -/
-private def tmpMVarId : MVarId := { name := `_discr_tree_tmp }
+private def tmpMVarId : MVarId := { id := ⟨0⟩ } -- NOTE: id generators always start at 1.
 private def tmpStar := mkMVar tmpMVarId
 
 instance : Inhabited (DiscrTree α s) where

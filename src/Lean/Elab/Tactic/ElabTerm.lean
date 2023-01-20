@@ -75,7 +75,7 @@ def sortMVarIdArrayByIndex [MonadMCtx m] [Monad m] (mvarIds : Array MVarId) : m 
     if decl₁.index != decl₂.index then
       decl₁.index < decl₂.index
     else
-      Name.quickLt mvarId₁.name mvarId₂.name
+      mvarId₁.id < mvarId₂.id
 
 def sortMVarIdsByIndex [MonadMCtx m] [Monad m] (mvarIds : List MVarId) : m (List MVarId) :=
   return (← sortMVarIdArrayByIndex mvarIds.toArray).toList
